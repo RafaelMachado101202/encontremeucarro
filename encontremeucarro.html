@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planta Matriz 2D Interativa - Encontre Meu Carro</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      color: #1e293b;
+    }
+
+    /* Container Principal Mobile (App Prototype Style) */
+    .app-card {
+      background-color: #f8fafc;
+      width: 100%;
+      max-width: 430px;
+      min-height: 800px;
+      border-radius: 36px;
+      padding: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    /* Screen Badge (Tela 13 a 18) */
+    .screen-badge {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      font-size: 0.725rem;
+      font-weight: 800;
+      background: #e0e7ff;
+      color: #3730a3;
+      padding: 4px 12px;
+      border-radius: 12px;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* Header Navigation */
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      margin-top: 4px;
+    }
+
+    .btn-back {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      color: #334155;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+      background: #f1f5f9;
+      transform: scale(1.05);
+    }
+
+    .header-titles h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .header-titles p {
+      font-size: 0.775rem;
+      color: #64748b;
+    }
+
+    /* Info Cards Bar */
+    .top-info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .info-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 8px 6px;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .info-card.vaga { background: #eff6ff; border-color: #bfdbfe; }
+    .info-card.andar { background: #f0fdf4; border-color: #bbf7d0; }
+    .info-card.setor { background: #faf5ff; border-color: #e9d5ff; }
+
+    .info-card .label {
+      font-size: 0.625rem;
+      color: #64748b;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .info-card .val {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    /* 2D Matrix Floor Plan Container */
+    .map-card-wrapper {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .map-title-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 2px;
+    }
+
+    .map-title-bar span {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .map-legend-inline {
+      display: flex;
+      gap: 10px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* 2D Matrix Grid Container */
+    .matrix-grid-container {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      grid-template-rows: repeat(10, 27px);
+      gap: 3px;
+      background: #cbd5e1;
+      padding: 4px;
+      border-radius: 12px;
+      position: relative;
+    }
+
+    /* Matrix Cells Styling */
+    .cell {
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.55rem;
+      font-weight: 700;
+      text-align: center;
+      position: relative;
+      user-select: none;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .cell:hover {
+      filter: brightness(0.95);
+      transform: scale(1.02);
+    }
+
+    .cell-walkway {
+      background: #f1f5f9;
+      color: #94a3b8;
+    }
+
+    .cell-store {
+      background: #cbd5e1;
+      color: #334155;
+      font-size: 0.5rem;
+    }
+
+    .cell-anchor-amer {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    .cell-anchor-ca {
+      background: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #a5b4fc;
+    }
+
+    .cell-anchor-riachuelo {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .cell-plaza {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+
+    .cell-elevator {
+      background: #f3e8ff;
+      color: #6b21a8;
+      border: 1px solid #d8b4fe;
+    }
+
+    .cell-entrance {
+      background: #0284c7;
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    .cell-parking {
+      background: #e2e8f0;
+      color: #475569;
+      border: 1px dashed #94a3b8;
+    }
+
+    .cell-target-car {
+      background: #16a34a !important;
+      color: #ffffff !important;
+      font-weight: 900;
+      border: 2px solid #14532d !important;
+      animation: pulse-car 1.2s infinite alternate;
+      z-index: 5;
+    }
+
+    @keyframes pulse-car {
+      0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+      100% { transform: scale(1.08); box-shadow: 0 0 10px 4px rgba(22, 163, 74, 0.5); }
+    }
+
+    /* Active Route Cells */
+    .cell-path-visited {
+      background: #93c5fd !important;
+      border: 1px solid #3b82f6 !important;
+    }
+
+    .cell-path-step {
+      background: #3b82f6 !important;
+      color: #ffffff !important;
+    }
+
+    /* Animated User Pin Indicator on Matrix Grid */
+    .user-pin {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #2563eb;
+      border: 2.5px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(37, 99, 235, 0.9);
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 0.65rem;
+      animation: pin-pulse 1.4s infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes pin-pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+      100% { transform: scale(1.18); box-shadow: 0 0 10px 5px rgba(37, 99, 235, 0.3); }
+    }
+
+    /* Progress bar */
+    .progress-bar-container {
+      width: 100%;
+      background: #e2e8f0;
+      height: 7px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+      transition: width 0.4s ease-in-out;
+    }
+
+    /* Tooltip / Info Banner for Cell Click */
+    .cell-info-banner {
+      width: 100%;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 4px 8px;
+      margin-top: 6px;
+      font-size: 0.675rem;
+      color: #334155;
+      text-align: center;
+      font-weight: 600;
+      min-height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Instruction Details Area */
+    .instruction-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .current-step-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-step-arrow {
+      width: 40px;
+      height: 40px;
+      background: #2563eb;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    }
+
+    .step-details h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .distance-tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      color: #dc2626;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+
+    .next-steps-section {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed #e2e8f0;
+    }
+
+    .next-steps-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .next-step-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .badge-num {
+      width: 18px;
+      height: 18px;
+      background: #e2e8f0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.675rem;
+      font-weight: 800;
+      color: #475569;
+    }
+
+    .next-step-text {
+      font-size: 0.775rem;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    /* Arrival Success Card */
+    .arrival-card {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 18px;
+      padding: 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+    }
+
+    .arrival-icon-circle {
+      width: 48px;
+      height: 48px;
+      background: #dcfce7;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #16a34a;
+      margin-bottom: 8px;
+    }
+
+    .arrival-card h2 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #15803d;
+      margin-bottom: 2px;
+    }
+
+    .arrival-card p {
+      font-size: 0.8rem;
+      color: #166534;
+    }
+
+    /* Action Button */
+    .btn-primary-action {
+      width: 100%;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+      margin-top: auto;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary-action:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary-action:active {
+      transform: translateY(1px);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-card">
+    <div class="screen-badge" id="screen-badge">Tela 13</div>
+
+    <!-- Header Navigation -->
+    <header class="header-nav">
+      <button class="btn-back" id="btn-back" title="Voltar tela anterior">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+      <div class="header-titles">
+        <h1>Encontre meu Carro</h1>
+        <p>Matriz 2D - Planta Cidade Jardim</p>
+      </div>
+    </header>
+
+    <!-- Top Info Bar -->
+    <div class="top-info-grid">
+      <div class="info-card vaga">
+        <span class="label">Vaga</span>
+        <span class="val">A70</span>
+      </div>
+      <div class="info-card andar">
+        <span class="label">Pavimento</span>
+        <span class="val">Térreo</span>
+      </div>
+      <div class="info-card setor">
+        <span class="label">Setor</span>
+        <span class="val">Setor A</span>
+      </div>
+    </div>
+
+    <!-- Map Card Container with 2D Matrix Grid -->
+    <div class="map-card-wrapper">
+      <div class="map-title-bar">
+        <span>Matriz 2D - Planta do Shopping</span>
+        <div class="map-legend-inline">
+          <div class="legend-item"><div class="legend-dot" style="background:#2563eb;"></div> Você</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#16a34a;"></div> Vaga A70</div>
+        </div>
+      </div>
+
+      <!-- Matrix Grid 9 columns x 10 rows -->
+      <div class="matrix-grid-container" id="matrix-grid">
+        <!-- Generated by JavaScript -->
+      </div>
+
+      <div class="cell-info-banner" id="cell-info-banner">
+        Clique em qualquer célula da matriz para inspecionar a área.
+      </div>
+
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progress-bar" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Dynamic Instruction Area -->
+    <div id="instruction-area"></div>
+
+    <!-- Bottom Action Button -->
+    <button class="btn-primary-action" id="btn-action">
+      <span id="btn-label">Iniciar Navegação</span>
+    </button>
+  </div>
+
+  <script>
+    /*
+      Matriz 2D Layout (10 linhas x 9 colunas):
+      - EntN: Entrada Principal Norte
+      - Amer: Lojas Americanas
+      - C&A: C&A
+      - Riach: Riachuelo
+      - Prat: Átrio / Praça Central
+      - Elev: Elevador / Acesso aos Pisos
+      - EntS: Entrada Sul
+      - A65..A75: Estacionamento / Vaga A70
+    */
+    const matrixLayout = [
+      ['wall', 'wall', 'wall', 'wall', 'EntN', 'wall', 'wall', 'wall', 'wall'],
+      ['wall', 'Amer', 'Amer', 'path', 'path', 'path', 'C&A',  'C&A',  'wall'],
+      ['wall', 'Amer', 'Amer', 'path', 'Prat', 'path', 'C&A',  'C&A',  'wall'],
+      ['wall', 'Sat1', 'path', 'path', 'Elev', 'path', 'path', 'Sat2', 'wall'],
+      ['wall', 'Sat3', 'path', 'Prat', 'Prat', 'Prat', 'path', 'Riach', 'wall'],
+      ['wall', 'Sat4', 'path', 'path', 'path', 'path', 'path', 'Riach', 'wall'],
+      ['wall', 'wall', 'wall', 'wall', 'EntS', 'wall', 'wall', 'wall', 'wall'],
+      ['park', 'park', 'park', 'path', 'path', 'path', 'park', 'park', 'park'],
+      ['A65',  'A66',  'A67',  'path', 'A70',  'path', 'A73',  'A74',  'A75'],
+      ['park', 'park', 'park', 'park', 'park', 'park', 'park', 'park', 'park']
+    ];
+
+    const cellDescriptions = {
+      'EntN': 'Entrada Principal Norte - Acesso principal do Shopping Cidade Jardim.',
+      'EntS': 'Entrada Sul - Saída para o Estacionamento Externo Setor A.',
+      'Amer': 'Lojas Americanas - Loja Âncora Norte.',
+      'C&A': 'C&A - Loja Âncora Nordeste.',
+      'Riach': 'Riachuelo - Loja Âncora Sudeste.',
+      'Prat': 'Átrio Central / Praça de Eventos.',
+      'Elev': 'Elevadores e Escadas Rolantes - Acesso aos Pavimentos.',
+      'Sat1': 'Loja Satélite 01 - Vestuário.',
+      'Sat2': 'Loja Satélite 02 - Calçados.',
+      'Sat3': 'Loja Satélite 03 - Eletrônicos.',
+      'Sat4': 'Loja Satélite 04 - Joalheria.',
+      'A70': 'Vaga A70 - Localização do seu Veículo (Setor A).',
+      'path': 'Corredor de Circulação / Pedestres.',
+      'park': 'Vaga de Estacionamento - Setor A.'
+    };
+
+    /* Define Navigation Flow from Screen 13 to Screen 18 */
+    const steps = [
+      {
+        screenId: 13,
+        stepNum: 0,
+        progress: 0,
+        pinPos: [0, 4],
+        routeCells: [[0,4], [1,4], [2,4], [3,4], [4,4], [5,4], [6,4], [7,4], [8,4]],
+        title: 'Trajeto Mapeado na Matriz 2D',
+        distance: '90m total',
+        buttonText: 'Iniciar Navegação →',
+        type: 'start'
+      },
+      {
+        screenId: 14,
+        stepNum: 1,
+        progress: 20,
+        pinPos: [0, 4],
+        routeCells: [[0,4], [1,4], [2,4]],
+        title: 'Passo 1: Saia pela Entrada Principal Norte',
+        distance: 'Distância: 25m',
+        nextSteps: [
+          { num: 2, text: 'Siga pelo corredor principal em direção ao Átrio' },
+          { num: 3, text: 'Passe pela área de elevadores' }
+        ],
+        buttonText: 'Próximo Passo →'
+      },
+      {
+        screenId: 15,
+        stepNum: 2,
+        progress: 40,
+        pinPos: [3, 4], // Elevador / Átrio
+        routeCells: [[0,4], [1,4], [2,4], [3,4], [4,4]],
+        title: 'Passo 2: Siga até os Elevadores / Átrio Central',
+        distance: 'Distância: 30m',
+        nextSteps: [
+          { num: 3, text: 'Atravesse reto a Praça Central' },
+          { num: 4, text: 'Dirija-se à Saída Sul' }
+        ],
+        buttonText: 'Próximo Passo →'
+      },
+      {
+        screenId: 16,
+        stepNum: 3,
+        progress: 60,
+        pinPos: [4, 4], // Praça Central
+        routeCells: [[0,4], [1,4], [2,4], [3,4], [4,4], [5,4]],
+        title: 'Passo 3: Atravesse a Praça Central',
+        distance: 'Distância: 20m',
+        nextSteps: [
+          { num: 4, text: 'Saia do shopping pela Entrada Sul' },
+          { num: 5, text: 'Localize a Vaga A70 no Setor A' }
+        ],
+        buttonText: 'Próximo Passo →'
+      },
+      {
+        screenId: 17,
+        stepNum: 4,
+        progress: 80,
+        pinPos: [6, 4], // Entrada Sul
+        routeCells: [[0,4], [1,4], [2,4], [3,4], [4,4], [5,4], [6,4], [7,4]],
+        title: 'Passo 4: Saia pela Entrada Sul até o Estacionamento',
+        distance: 'Distância: 15m',
+        nextSteps: [
+          { num: 5, text: 'Sua vaga A70 está logo à frente' }
+        ],
+        buttonText: 'Próximo Passo →'
+      },
+      {
+        screenId: 18,
+        stepNum: 5,
+        progress: 100,
+        pinPos: [8, 4], // Vaga A70
+        routeCells: [[0,4], [1,4], [2,4], [3,4], [4,4], [5,4], [6,4], [7,4], [8,4]],
+        title: 'Passo 5: Chegada',
+        distance: 'Distância: 0m',
+        isArrival: true,
+        buttonText: 'Finalizar Navegação 🏁'
+      }
+    ];
+
+    let currentIdx = 0;
+
+    function renderMatrixGrid() {
+      const gridContainer = document.getElementById('matrix-grid');
+      gridContainer.innerHTML = '';
+
+      const currentStep = steps[currentIdx];
+      const routeSet = new Set(currentStep.routeCells.map(c => `${c[0]}-${c[1]}`));
+
+      for (let r = 0; r < matrixLayout.length; r++) {
+        for (let c = 0; c < matrixLayout[r].length; c++) {
+          const cellVal = matrixLayout[r][c];
+          const cellDiv = document.createElement('div');
+          cellDiv.className = 'cell';
+          cellDiv.dataset.row = r;
+          cellDiv.dataset.col = c;
+          cellDiv.dataset.type = cellVal;
+
+          // Apply visual styles
+          if (cellVal === 'EntN' || cellVal === 'EntS') {
+            cellDiv.classList.add('cell-entrance');
+            cellDiv.innerText = cellVal === 'EntN' ? 'Norte' : 'Sul';
+          } else if (cellVal === 'Amer') {
+            cellDiv.classList.add('cell-anchor-amer');
+            cellDiv.innerText = 'Amer.';
+          } else if (cellVal === 'C&A') {
+            cellDiv.classList.add('cell-anchor-ca');
+            cellDiv.innerText = 'C&A';
+          } else if (cellVal === 'Riach') {
+            cellDiv.classList.add('cell-anchor-riachuelo');
+            cellDiv.innerText = 'Riach.';
+          } else if (cellVal === 'Prat') {
+            cellDiv.classList.add('cell-plaza');
+            cellDiv.innerText = 'Átrio';
+          } else if (cellVal === 'Elev') {
+            cellDiv.classList.add('cell-elevator');
+            cellDiv.innerText = 'Elev.';
+          } else if (cellVal.startsWith('Sat')) {
+            cellDiv.classList.add('cell-store');
+            cellDiv.innerText = 'Loja';
+          } else if (cellVal === 'A70') {
+            cellDiv.classList.add('cell-target-car');
+            cellDiv.innerText = '🚗 A70';
+          } else if (cellVal.startsWith('A')) {
+            cellDiv.classList.add('cell-parking');
+            cellDiv.innerText = cellVal;
+          } else if (cellVal === 'park') {
+            cellDiv.classList.add('cell-parking');
+            cellDiv.innerText = 'P';
+          } else if (cellVal === 'path') {
+            cellDiv.classList.add('cell-walkway');
+          } else {
+            cellDiv.classList.add('cell-walkway');
+            cellDiv.style.opacity = '0.35';
+          }
+
+          // Highlight route cells on matrix
+          if (routeSet.has(`${r}-${c}`) && cellVal !== 'A70') {
+            cellDiv.classList.add('cell-path-visited');
+          }
+
+          // Click handler for inspecting matrix cells
+          cellDiv.addEventListener('click', () => {
+            const infoBanner = document.getElementById('cell-info-banner');
+            const desc = cellDescriptions[cellVal] || `Célula [${r}, ${c}] - Setor do Shopping`;
+            infoBanner.innerText = `[Linha ${r}, Coluna ${c}] ${desc}`;
+          });
+
+          gridContainer.appendChild(cellDiv);
+        }
+      }
+
+      // Render User Pin on top of matrix
+      const [pinR, pinC] = currentStep.pinPos;
+      const targetCellIndex = pinR * 9 + pinC;
+      const allCells = gridContainer.querySelectorAll('.cell');
+      const targetCell = allCells[targetCellIndex];
+
+      if (targetCell) {
+        const pinDiv = document.createElement('div');
+        pinDiv.className = 'user-pin';
+        pinDiv.innerText = '📍';
+        targetCell.appendChild(pinDiv);
+      }
+    }
+
+    function renderUI() {
+      const data = steps[currentIdx];
+      const badge = document.getElementById('screen-badge');
+      const progressBar = document.getElementById('progress-bar');
+      const btnLabel = document.getElementById('btn-label');
+      const instructionArea = document.getElementById('instruction-area');
+
+      badge.innerText = `Tela ${data.screenId}`;
+      progressBar.style.width = `${data.progress}%`;
+      btnLabel.innerText = data.buttonText;
+
+      renderMatrixGrid();
+
+      if (data.isArrival) {
+        instructionArea.innerHTML = `
+          <div class="arrival-card">
+            <div class="arrival-icon-circle">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <h2>Você chegou à Vaga A70!</h2>
+            <p>Seu veículo está estacionado exatamente na sua frente.</p>
+          </div>
+        `;
+      } else {
+        instructionArea.innerHTML = `
+          <div class="instruction-card">
+            <div class="current-step-box">
+              <div class="icon-step-arrow">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </div>
+              <div class="step-details">
+                <h3>${data.title}</h3>
+                <div class="distance-tag">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+                  <span>${data.distance}</span>
+                </div>
+              </div>
+            </div>
+
+            ${data.nextSteps ? `
+              <div class="next-steps-section">
+                <span class="next-steps-title">Próximos passos no percurso:</span>
+                ${data.nextSteps.map(s => `
+                  <div class="next-step-item">
+                    <div class="badge-num">${s.num}</div>
+                    <span class="next-step-text">${s.text}</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+    }
+
+    document.getElementById('btn-action').addEventListener('click', () => {
+      if (currentIdx < steps.length - 1) {
+        currentIdx++;
+        renderUI();
+      } else {
+        alert('Navegação concluída! Reiniciando o percurso.');
+        currentIdx = 0;
+        renderUI();
+      }
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => {
+      if (currentIdx > 0) {
+        currentIdx--;
+        renderUI();
+      } else {
+        alert('Você já está na Tela 13 (Início da Navegação).');
+      }
+    });
+
+    // Initialize UI on load
+    renderUI();
+  </script>
+</body>
+</html>

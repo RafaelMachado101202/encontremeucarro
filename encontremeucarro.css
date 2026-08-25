@@ -1,0 +1,379 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Fundo da tela com o degradê radial idêntico ao da tela de monitoramento */
+body {
+  background: radial-gradient(circle at center, #0b3c91 0%, #030e28 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Modal/Card Principal */
+.app-card {
+  background-color: #eff4fb;
+  width: 100%;
+  max-width: 390px;
+  min-height: 700px;
+  border-radius: 28px;
+  padding: 24px 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Header */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.btn-back {
+  background: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: #334155;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: background 0.2s;
+}
+
+.btn-back:hover {
+  background: #f1f5f9;
+}
+
+.header-titles h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.header-titles p {
+  font-size: 0.825rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Grid de Métricas Superiores */
+.top-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.info-card {
+  border-radius: 14px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.info-card.vaga {
+  background: #ebf3ff;
+  color: #2b62e3;
+}
+
+.info-card.andar {
+  background: #e6f7ed;
+  color: #059669;
+}
+
+.info-card.setor {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.info-card .label {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.info-card .val {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+/* Container de Mapa / Navegação em Card Branco */
+.map-container,
+.instruction-card,
+.arrival-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 20px 16px;
+  margin-bottom: 16px;
+}
+
+.map-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Tela de Início de Navegação */
+.start-nav-box {
+  background: #ebf3ff;
+  border-radius: 14px;
+  padding: 24px 16px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-circle-blue {
+  width: 56px;
+  height: 56px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(43, 98, 227, 0.15);
+  color: #2b62e3;
+}
+
+.start-nav-box h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.start-nav-box p {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Barra de Progresso do Percurso */
+.progress-route-wrapper {
+  background: #f8fafc;
+  border-radius: 14px;
+  width: 100%;
+  padding: 32px 16px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #0f172a; /* Trilho preto/escuro padrão do design */
+  border-radius: 9999px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-pin {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  background: #2b62e3;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(43, 98, 227, 0.35);
+  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-pill-badge {
+  margin-top: 20px;
+  background: #ffffff;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Bloco do Passo Atual */
+.current-step-box {
+  background: #ebf3ff;
+  border: none;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-step-arrow {
+  width: 40px;
+  height: 40px;
+  background: #2b62e3;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.step-details h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.distance-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.775rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Próximos Passos */
+.next-steps-section {
+  margin-top: 14px;
+  padding-top: 10px;
+}
+
+.next-steps-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.next-step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.next-step-item:last-child {
+  margin-bottom: 0;
+}
+
+.badge-num {
+  width: 22px;
+  height: 22px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.next-step-text {
+  font-size: 0.8rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* Card de Chegada */
+.arrival-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.arrival-icon-circle {
+  width: 60px;
+  height: 60px;
+  background: #e6f7ed;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #059669;
+  margin-bottom: 12px;
+}
+
+.arrival-card h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #059669;
+  margin-bottom: 4px;
+}
+
+.arrival-card p {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* Botões de Ação */
+.btn-primary-action {
+  width: 100%;
+  background: #2b62e3;
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 6px 16px rgba(43, 98, 227, 0.25);
+  margin-top: auto;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-primary-action:hover {
+  background: #1d4ed8;
+}
+
+.btn-primary-action:active {
+  transform: scale(0.98);
+}
+
+/* Botão Estilo Outline Pill (Seguindo o "Encontre meu Carro") */
+.btn-outline-pill {
+  width: 100%;
+  background: #ffffff;
+  border: 1.5px solid #2b62e3;
+  color: #2b62e3;
+  border-radius: 9999px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
