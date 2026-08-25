@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planta Baixa Térreo - Rota Riachuelo -> Vaga A-145</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(180deg, #0e56c2 0%, #0a3875 55%, #061c3f 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      color: #1e293b;
+    }
+
+    /* Container Principal */
+    .app-card {
+      background-color: #f8fafc;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 32px;
+      padding: 18px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Header Navigation */
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .btn-back {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      color: #334155;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .header-titles h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .header-titles p {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    /* Info Bar */
+    .top-info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .info-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 6px;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+
+    .info-card.vaga { background: #eff6ff; border-color: #bfdbfe; }
+    .info-card.andar { background: #f0fdf4; border-color: #bbf7d0; }
+    .info-card.setor { background: #faf5ff; border-color: #e9d5ff; }
+
+    .info-card .label {
+      font-size: 0.6rem;
+      color: #64748b;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: block;
+    }
+
+    .info-card .val {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    /* CANVAS DO MAPA 2D */
+    .map-card-wrapper {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 6px;
+      margin-bottom: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .map-canvas {
+      width: 100%;
+      height: 360px;
+      background: #3e4c5e;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Badges Superiores */
+    .map-badge {
+      position: absolute;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 16px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 15;
+    }
+
+    .badge-left { top: 10px; left: 10px; }
+    .badge-right { top: 10px; right: 10px; }
+
+    /* Faixas de Estacionamento */
+    .parking-zone {
+      position: absolute;
+      width: 100%;
+      height: 46px;
+      left: 0;
+    }
+
+    .top-parking { top: 0; }
+    .bottom-parking { bottom: 0; }
+
+    .dashed-lines {
+      width: 100%;
+      height: 100%;
+      background-image: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 16px,
+        rgba(255, 255, 255, 0.25) 16px,
+        rgba(255, 255, 255, 0.25) 18px
+      );
+    }
+
+    /* Vaga Target A-145 (Centralizada em X:45%, Y:12%) */
+    .target-vaga-marker {
+      position: absolute;
+      left: 45%;
+      top: 12%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .vaga-text-label {
+      position: absolute;
+      bottom: 26px;
+      font-size: 0.62rem;
+      font-weight: 900;
+      color: #4ade80;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    .green-circle-target {
+      width: 22px;
+      height: 22px;
+      background: #22c55e;
+      border: 3px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.9);
+      animation: pulse-green 1.3s infinite alternate;
+    }
+
+    @keyframes pulse-green {
+      0% { transform: scale(0.9); }
+      100% { transform: scale(1.15); }
+    }
+
+    /* Bloco Interno do Shopping */
+    .building-card {
+      position: absolute;
+      top: 15%;
+      left: 16%;
+      right: 16%;
+      bottom: 15%;
+      background: #d3dbe4;
+      border-radius: 16px;
+      border: 2px solid #5a6978;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .building-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .store-box {
+      background: #beccda;
+      border: 1.5px solid #6c7d8f;
+      border-radius: 6px;
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 0.55rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2px;
+    }
+
+    .store-amer { width: 42%; height: 52px; }
+    .store-carga { width: 28%; height: 38px; font-size: 0.48rem; }
+    .store-ca1 { width: 26%; height: 52px; }
+    .store-ca2 { width: 42%; height: 52px; }
+    .store-riach { width: 42%; height: 52px; }
+
+    .mid-row {
+      justify-content: center;
+      margin: 2px 0;
+    }
+
+    .atrium-oval {
+      width: 85%;
+      height: 38px;
+      background: #bbf7d0;
+      border: 2px solid #22c55e;
+      border-radius: 25px;
+      color: #0f172a;
+      font-size: 0.62rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .entrada-sul-label {
+      position: absolute;
+      bottom: 12.5%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #38bdf8;
+      font-weight: 900;
+      font-size: 0.6rem;
+      letter-spacing: 0.8px;
+      z-index: 10;
+    }
+
+    /* Rota SVG: Subindo externamente à direita da Praça Central (X: 800) */
+    .route-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 12;
+    }
+
+    /* Ponto Azul do Usuário */
+    .user-pin-marker {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #2563eb;
+      border: 3px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(37, 99, 235, 0.9);
+      z-index: 25;
+      transform: translate(-50%, -50%);
+      transition: left 0.35s ease, top 0.35s ease;
+    }
+
+    /* Barra de Progresso */
+    .progress-bar-container {
+      width: 100%;
+      background: #e2e8f0;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: #2563eb;
+      transition: width 0.35s ease;
+    }
+
+    /* Card de Instruções */
+    .instruction-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .current-step-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-step-arrow {
+      width: 36px;
+      height: 36px;
+      background: #2563eb;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .step-details h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .distance-tag {
+      font-size: 0.72rem;
+      color: #dc2626;
+      font-weight: 700;
+    }
+
+    /* Botão de Ação */
+    .btn-primary-action {
+      width: 100%;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-primary-action:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-card">
+
+    <header class="header-nav">
+      <button class="btn-back" id="btn-back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+      <div class="header-titles">
+        <h1>Encontre meu Carro</h1>
+        <p>Planta Baixa · Térreo</p>
+      </div>
+    </header>
+
+    <div class="top-info-grid">
+      <div class="info-card vaga">
+        <span class="label">Vaga</span>
+        <span class="val">A-145</span>
+      </div>
+      <div class="info-card andar">
+        <span class="label">Pavimento</span>
+        <span class="val">Térreo</span>
+      </div>
+      <div class="info-card setor">
+        <span class="label">Setor</span>
+        <span class="val">Setor A</span>
+      </div>
+    </div>
+
+    <div class="map-card-wrapper">
+      <div class="map-canvas">
+
+        <!-- Badges Superiores -->
+        <div class="map-badge badge-left">Planta Baixa · Térreo</div>
+        <div class="map-badge badge-right">Modo...</div>
+
+        <!-- Estacionamento Superior -->
+        <div class="parking-zone top-parking">
+          <div class="dashed-lines"></div>
+        </div>
+
+        <!-- Destino Vaga A-145 (Centralizada em X: 45%, Y: 12%) -->
+        <div class="target-vaga-marker">
+          <span class="vaga-text-label">Vaga A-145</span>
+          <div class="green-circle-target"></div>
+        </div>
+
+        <!-- Estrutura do Shopping -->
+        <div class="building-card">
+          <div class="building-row">
+            <div class="store-box store-amer">Lojas Americanas</div>
+            <div class="store-box store-carga">Carga & Serviços</div>
+            <div class="store-box store-ca1">C&A</div>
+          </div>
+
+          <div class="building-row mid-row">
+            <div class="atrium-oval">Praça Central / Átrio</div>
+          </div>
+
+          <div class="building-row">
+            <div class="store-box store-ca2">C&A</div>
+            <div class="store-box store-riach">Riachuelo</div>
+          </div>
+        </div>
+
+        <div class="entrada-sul-label">ENTRADA SUL</div>
+
+        <!-- Estacionamento Inferior -->
+        <div class="parking-zone bottom-parking">
+          <div class="dashed-lines"></div>
+        </div>
+
+        <!-- Caminho Atualizado: X alterado de 730 para 800 para contornar totalmente a Praça Central/Átrio -->
+        <svg class="route-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+          <path d="M 800 710 L 800 430 L 450 430 L 450 120" 
+                fill="none" 
+                stroke="#ffffff" 
+                stroke-width="14" 
+                stroke-linecap="round" 
+                stroke-linejoin="round" />
+        </svg>
+
+        <!-- Marcador do Usuário -->
+        <div class="user-pin-marker" id="user-pin"></div>
+
+      </div>
+
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progress-bar" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Instruções do Percurso -->
+    <div class="instruction-card">
+      <div class="current-step-box">
+        <div class="icon-step-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
+        <div class="step-details">
+          <h3 id="step-title">Você está no interior da loja Riachuelo</h3>
+          <span class="distance-tag" id="step-dist">Distância total: 85m</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary-action" id="btn-action">Iniciar Navegação</button>
+
+  </div>
+
+  <script>
+    // Coordenadas atualizadas (X: 80% desvia completamente da Praça Central)
+    const steps = [
+      { progress: 0,   x: 80, y: 71, title: 'Você está no interior da loja Riachuelo', dist: 'Distância total: 85m', btn: 'Iniciar Navegação' },
+      { progress: 25,  x: 80, y: 43, title: 'Saia pela direita e siga reto pelo corredor lateral', dist: 'Distância: 30m', btn: 'Próximo Passo →' },
+      { progress: 50,  x: 45, y: 43, title: 'Vire à esquerda no corredor acima do Átrio', dist: 'Distância: 22m', btn: 'Próximo Passo →' },
+      { progress: 75,  x: 45, y: 28, title: 'Siga reto em direção ao estacionamento', dist: 'Distância: 18m', btn: 'Próximo Passo →' },
+      { progress: 100, x: 45, y: 12, title: 'Chegou à Vaga A-145!', dist: 'Seu carro está estacionado aqui', btn: 'Finalizar 🏁' }
+    ];
+
+    let currentIdx = 0;
+
+    function renderStep() {
+      const step = steps[currentIdx];
+      const pin = document.getElementById('user-pin');
+      const progressBar = document.getElementById('progress-bar');
+      const stepTitle = document.getElementById('step-title');
+      const stepDist = document.getElementById('step-dist');
+      const btnAction = document.getElementById('btn-action');
+
+      // Atualiza posição do marcador azul
+      pin.style.left = `${step.x}%`;
+      pin.style.top = `${step.y}%`;
+
+      // Atualiza interface e textos
+      progressBar.style.width = `${step.progress}%`;
+      stepTitle.innerText = step.title;
+      stepDist.innerText = step.dist;
+      btnAction.innerText = step.btn;
+    }
+
+    document.getElementById('btn-action').addEventListener('click', () => {
+      if (currentIdx < steps.length - 1) {
+        currentIdx++;
+      } else {
+        currentIdx = 0;
+      }
+      renderStep();
+    });
+
+    document.getElementById('btn-back').addEventListener('click', () => {
+      if (currentIdx > 0) {
+        currentIdx--;
+        renderStep();
+      }
+    });
+
+    renderStep();
+  </script>
+</body>
+</html>
